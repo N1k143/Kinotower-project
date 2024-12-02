@@ -1,7 +1,32 @@
 <template>
+  <header>
+    <nav class="navbar navbar-expand-md navbar-dark  bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">CinemaLife</a>
+        <div class="buttons justify-content-end ">
+          <button type="button" class="btn btn-outline-light me-3">Sign In</button>
+          <button type="button" class="btn btn-outline-light">Sign Up</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="flex-shrink-0 my-2">
+    <slot/>
+    <NuxtPage />
+  </main>
+
+  <footer class="fixed-bottom text-center">
+    <div class="container">
+      <span class="text-body-secondary text-center">CinemaLife 2024</span>
+    </div>
+  </footer>
   <div>
-    <AppHeader />
-    <slot />
-    <AppFooter />
   </div>
 </template>
+<script setup lang="ts">
+</script>
+
+<style>
+
+</style>
