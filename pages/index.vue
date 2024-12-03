@@ -1,58 +1,91 @@
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from "vue";
+import { useFilmStore } from "~/stores/Film";
+import {useCategoryStore} from "~/stores/category";
 
+const filmStore = useFilmStore();
+const countryStore = useCountrystore();
+const categoryStore = useCategoryStore();
+const category = ref(null);
+const country = ref(null);
+const sort = ref('name');
+const filter = () => {
+  filmStore.addSortToParams(sort.value);
+  filmStore.addCountryToParams(country.value);
+  filmStore.addCategoryToParams(category.value);
+  filmStore.fetchFilms();
+}
+
+const resetFilter = () => {
+      category.value = null;
+      country.value = null;
+      sort.value = 'name';
+      filter();
+}
 </script>
+
 
 <template>
   <div class="container">
 <div class="row my-4">
   <div class="col-md-4">
-    <select class="form-select" aria-label="Default select example">
+    <select v-model="category" @change="filter" class="form-select" aria-label="Default select example">
       <option selected>Select genre</option>
-      <option value="1">One</option>
-      <option value="2">Two</option>
-      <option value="3">Three</option>
+      <option
+          v-for="category in categoryStore.categories"
+          :key="category.id"
+          :value="category.id">{{category.name}} ({{category.filmCount}})</option>
     </select>
   </div>
   <div class="col">
-    <select class="form-select" aria-label="Default select example">
+    <select v-model="country"  @change="filter" class="form-select" aria-label="Default select example">
       <option selected>Select country</option>
-      <option value="1">One</option>
-      <option value="2">Two</option>
-      <option value="3">Three</option>
+      <option
+          v-for="country in countryStore.countries"
+          :key="country.id"
+          :value="country.id">{{country.name}}</option>
     </select>
   </div>
   <div class="col">
-    <select class="form-select" aria-label="Default select example">
+    <select v-model="sort"  @change="filter" class="form-select" aria-label="Default select example">
       <option value="name">Name</option>
       <option value="year">Year</option>
       <option value="rating">Rating</option>
     </select>
   </div>
   <div class="col">
-    <button type="button" class="btn btn-outline-warning">Reset</button>
+    <button type="button" @click="resetFilter" class="btn btn-outline-warning">Reset</button>
   </div>
 </div>
-
+    <div class="text-center mt-4 mb-4" v-if="filmStore.isLoading" >
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
   <div class="row row-cols-1 row-cols-md-3 g-4">
-    <div class="col">
-      <div class="card h-100">
-        <img style="height: 550px" src="https://upload.wikimedia.org/wikipedia/ru/6/6f/%D0%94%D0%B6%D0%BE%D0%BA%D0%B5%D1%80_%28%D1%84%D0%B8%D0%BB%D1%8C%D0%BC_%D0%A2%D0%BE%D0%B4%D0%B4%D0%B0_%D0%A4%D0%B8%D0%BB%D0%BB%D0%B8%D0%BF%D1%81%D0%B0%29.jpg" class="card-img-top" alt="...">
+    <div class="col" v-for="film in filmStore.films" :key="film.id">
+    <div class="card h-100">
+      <img v-if="film.link_img" style="height: 550px" :src="film.link_img" class="card-img-top" alt="...">
+      <img v-else style="height: 550px" src="https://poster4.me/wp-content/uploads/2020/01/img_1551.jpeg" alt="...">
         <div class="card-body">
-          <h5 class="card-title">The Joker</h5>
-          <h6 class="card-title">8.0</h6>
-          <h6 class="card-title">122 min</h6>
-          <h6 class="card-title">Drama, crime, thriller</h6>
+          <h5 class="card-title">{{film.name}}</h5>
+          <h6 class="card-title">{{film.ratingAvg}}</h6>
+          <h6 class="card-title">{{film.duration}}</h6>
+          <h6 class="card-title"><template v-for="category in film.categories" :key = "category.id">{{category.name}}
+          {{category.name}}
+          </template></h6>
         </div>
         <div class="card-footer">
-          <button type="button" class="btn btn-outline-info">Info</button>
+          <button type="button" class="btn btn-outline-info me-2">Info</button>
+          <a :href="film.link_kinopoisk" type="button" class="btn btn-outline-warning me-2" target="_blank" rel="noopener noreferrer">Kinopoisk</a>
         </div>
       </div>
     </div>
   </div>
 
-    
 
-    <nav class="d-flex justify-content-center mt-4 mb-4" aria-label="Page navigation example">
+
+    <nav v-if="!filmStore.isLoading" class="d-flex justify-content-center mt-4 mb-4" aria-label="Page navigation example">
       <ul class="pagination">
         <li class="page-item">
           <a class="page-link" href="#" aria-label="Previous">
