@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { api } from "~/api/index.js";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 
 
 export const useFilmStore = defineStore("film", () => {
@@ -13,6 +13,12 @@ export const useFilmStore = defineStore("film", () => {
         sortDir: 'asc',
         category: null,
         country: null,
+    })
+
+    const totalFilms = ref(0);
+    const currentPage = ref(1);
+    const totalPages = computed(() => {
+        return Math.ceil(totalFilms.value / params.value.size);
     })
 
     const addCategoryToParams = (category) => {
@@ -29,10 +35,13 @@ export const useFilmStore = defineStore("film", () => {
 
     const fetchFilms = async () => {
         isLoading.value = true;
+        params.value.page = currentPage.value;
         const res = await api.get('/films', {params: params.value});
         films.value = res.data.films;
+        totalFilms.value = res.data.total;
         isLoading.value = false;
     };
+
 fetchFilms();
 
     return {
@@ -43,5 +52,7 @@ fetchFilms();
         addCountryToParams,
         addSortToParams,
         fetchFilms,
+        currentPage,
+        totalPages
     };
 });
